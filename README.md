@@ -1,3 +1,836 @@
+UnrealEnginePython
+
+Unreal Engine 4にPythonを埋め込む
+
+どのように、なぜ？
+
+これは、Unreal Engine 4（エディタとランタイムの両方）でPython VM全体を埋め込んだプラグインです（バージョン3.x [デフォルトで推奨されているもの]と2.7）。
+
+Python VMは、UE4の内部API +反射システムのすべてに簡単にアクセスしようとします。つまり、プラグインを使用して他のプラグインを作成したり、タスクを自動化したり、ゲームプレイ要素を実装したりすることができます。
+
+それは、青写真やC ++を避ける方法としてではなく、（ゲームをコーディングするのに必要なC ++の量を減らすことは面白いことかもしれませんが）それらの良い仲間としては意味がありません。
+
+もう一つの面白い機能は、プロジェクトがパッケージ化された後でさえ、あなたのPythonコードを変更できるということです。既にパッケージ化されたゲームから完全に新しいゲームを構築する可能性があります。
+
+これに加えて、プラグインはあなたのゲームにPythonを "穏やかに"統合するために、アクタークラス（PyActor）、ポーンクラス（PyPawn）、文字クラス（PyCharacter）、コンポーネントクラス（PythonComponent）を自動的に追加します。
+
+開発メニューでは、 'PythonConsole'にもアクセスできます。これを使用して、Pythonコマンドをエディタから直接トリガすることができます。
+
+公開されているすべてのエンジン機能は、 'unreal_engine'仮想モジュールの下にあります（プラグインに完全にcでコード化されていますので、標準のpythonシェルから 'import unreal_engine'を実行することを期待しないでください）
+
+現在サポートされているUnreal Engineのバージョンは4.12,4.13,4.14です
+
+Windowsでのバイナリインストール（64ビット）
+
+リリースページ（チェックインhttps://github.com/20tab/UnrealEnginePython/releases構成（それ以外の場合のための私達に尋ねる問題を開くには、[あまりにもPythonのバージョンを指定してください]）、ダウンロードに一致するバイナリバージョンがある場合）それ。
+
+バイナリリリースは標準と埋め込みの2つの形式になっています。Standardはあなたのシステムのpythonインストールを使用するので、pythonのインストールディレクトリがあなたのシステムのPATH環境変数にあることを確認してください（そうしないと、プロジェクトの読み込み中にエラーが発生します）。組み込みリリースには組み込みのPythonインストールが含まれているため、システムにPythonをインストールする必要はありません。
+
+プロジェクトルートディレクトリ（同じレベルのContent / .projectsファイル）にプラグインディレクトリを作成し（まだ存在しない場合）、プラグインをそのディレクトリに解凍します。プロジェクトの名前がFooBarの場合は、FooBar / Plugins / UnrealEnginePythonで終了します。
+
+プロジェクトを開き、Edit / Pluginsメニューに移動します。下部に移動し、[プロジェクト/スクリプト言語]でUnrealEnginePythonを有効にします。
+
+プロジェクトを再起動すると、PythonConsoleが "Window / Developer Tools"メニューに表示されます
+
+バイナリリリースは主にエディタスクリプティングに役立ちます。配布用にプロジェクトをパッケージ化し、Pythonランタイムが必要な場合は、ソースリリースが必要です（下記参照）。
+
+代わりに、あなたのpythonせずにプロジェクトをパッケージ化したい場合は、ちょうどこのラインを持っているUnrealEnginePython.upluginを変更してください：https://github.com/20tab/UnrealEnginePython/blob/master/UnrealEnginePython.uplugin#L20はエディタ」として設定"ランタイム"の代わりに "
+
+Windows上のソースからのインストール（64ビット）
+
+現在、python3.6、python3.5、python2.7がサポートされています。Pythonシステム全体のインストール（デフォルトでは公式のpythonディストリビューションはユーザーのホームディレクトリにインストールされています）を含むPATH環境変数を使用することを強くお勧めします（PATH変数を変更した場合は、厳密には必須ではありませんが、PATHが確実に更新されます）。PATH変数にPythonインストールのパスが含まれていない場合、ビルドログ/出力に警告が表示されます。
+
+ソースの公式リリースをダウンロードするか、単にリポジトリを最新のアップデート用に複製してください：
+
+git clone https://github.com/20tab/UnrealEnginePython
+デフォルトでは、ビルドプロシージャは、ハードコーディングされた既知のパスを見て、Pythonのインストールを検出しようとします。：あなたが（または自動検出は、単に失敗した）カスタムPythonのインストールを指定したい場合は、この行でソース/ UnrealEnginePython / UnrealEnginePython.Build.csファイルでそれを変更することができますhttps://github.com/20tab/UnrealEnginePython/blob/マスター/ソース/ UnrealEnginePython / UnrealEnginePython.Build.cs＃L10
+
+プラグインをインストールするプロジェクトを選択し、ファイルエクスプローラを開きます（これは叙事詩ランチャーからも実行できます）。
+
+あなたのプロジェクトにプラグイン/ディレクトリ（存在しない場合）を作成し、そのディレクトリにUnrealEnginePythonをコピーします
+ファイルエクスプローラから、プロジェクトのメインファイルを右クリックし、「ビジュアルスタジオプロジェクトファイルを生成」を選択します。
+プラグイン/ UnrealEnginePythonがソリューションエクスプローラに表示されるはずです
+Visual Studioからコンパイルを実行する
+コンパイルが終了したら、pythonライブラリをプラグインで見つけることができます（前に説明したシステムのPATHに入っていなければなりません。ビルドしたばかりのプラグインのBinaries / Win64ディレクトリに残酷にコピーする必要があります）
+Unreal Engineエディタを再実行することができます
+すべてうまくいくと、「ウィンドウ/開発者ツール」メニューに「Python Console」が表示されます
+
+プロジェクトをパッケージ化したい場合は（実行時にPython VMが必要な場合にのみ必要です。ゲームロジックはPythonでプログラミングされています）、Content / Scripts / ue_site.pyファイルがプロジェクト内にあることを確認してください空にする）。ビルド手順の最後に、必要なすべてのPythonスクリプトを最終ディレクトリにコピーしてください。最終ビルドに埋め込みのPythonを追加しない限り、プロジェクトの最終的なユーザーはPythonを自分のシステムにインストールする必要があります。
+
+あなたのpythonなしでパッケージ化したい場合は、ちょうどこのラインを持っているUnrealEnginePython.upluginを変更してください：https://github.com/20tab/UnrealEnginePython/blob/master/UnrealEnginePython.uplugin#L20は、代わりに"の"編集者"として設定ランタイム"
+
+MacOSX上のソースからのインストール
+
+Python.orgから最新の公式のPythonディストリビューションをインストールしてください（インストールは "/Library/Frameworks/Python.framework/Versions/XY"ディレクトリで終了します）。
+新しい非現実的なエンジンの空白のC + +プロジェクトを作成します（そうでないとXcodeは初期化されません）
+プロジェクトディレクトリにPluginsディレクトリを作成する
+Pluginsディレクトリに移動し、プラグインリポジトリをクローンします。
+git clone https://github.com/20tab/UnrealEnginePython
+エディタを再起動すると、プラグインのビルドの確認を求めるポップアップが表示されます。
+プラグインがビルドされたら、出力ログコンソールに行き、 'Python'をフィルタリングします。Python VMバナーが表示されます。
+ビルドプロシージャは、自動的にPythonのインストールを検出しようとします。カスタムパスが必要な場合は、ここで編集してください：
+
+https://github.com/20tab/UnrealEnginePython/blob/master/Source/UnrealEnginePython/UnrealEnginePython.Build.cs#L10
+
+MacOSXでのアップグレード
+
+UnrealEnginePythonの最新開発版にアップグレードするには：
+
+プロジェクトディレクトリのPluginsディレクトリに移動し、git pullを使用します。
+git pull
+プラグインディレクトリからUnrealEnginePython / Binaries / Macに移動する
+プラグインライブラリを削除してUnrealEngineにプラグインの再コンパイルを警告する
+rm *のは.dylib
+エディタを再起動すると、プラグインのビルドの確認を求めるポップアップが表示されます。
+プラグインがビルドされたら、出力ログコンソールに行き、 'Python'をフィルタリングします。Python VMバナーが表示されます。
+ソースからのインストールLinux（64ビット）
+
+現在推奨されているのは、Ubuntu Xenial（LTS 16.04）64bitです。明らかに、Unreal Engineビルドを既に持っている必要があります（ubuntu xenialでは、エディタを構築するためにclang-3.5パッケージをインストールする必要があります）。python2.7とpython3.5の両方がサポートされており、デフォルトの設定ではpython3が仮定されています（python3-devパッケージを確実にインストールしてください）。
+
+新しいC ++プロジェクトを作成し、プロジェクトが完全に開始されたらエディタを閉じます。
+作成したばかりのプロジェクトディレクトリに移動して、プラグインフォルダを作成します
+Pluginsフォルダに移動し、プラグインリポジトリをクローンします。
+git clone https://github.com/20tab/UnrealEnginePython
+プロジェクトを再オープンします。今回は、Pythonプラグインの再ビルドを求めるポップアップが表示されます。はいを選択して待ちます。
+注：ターミナルからプロジェクトを実行して、スタートアップログを見ることができます（初めてプラグインをビルドするとき、プラグインをビルドできない場合、関連するログ行を貼り付けるgithubで問題を開くときに便利です）。
+
+python2を使用する場合は、Source / UnrealEnginePython / UnrealEnginePython.Build.csファイルを編集し、pythonHome文字列を "python27"に変更します（python2.7-devパッケージがインストールされていることを確認してください）。
+
+別のPythonインストールを使用する場合は、UnrealEnginePython.Build.csの最後に移動し、includeとlibpythonのパスを適宜変更してください
+
+Linuxでプラグインをアップグレードする
+
+プラグイン/ UnrealEnginePython / Binaries / Linuxの.soファイルを削除し、最新のコードを取得してください。
+
+次回の実行時に、ビルド手順が再開されます。
+
+他のプラットフォームへのインストール
+
+現在のところ、Windows、MacOSX、Linuxだけがサポートされています。私たちは、kivyプロジェクトを通じてAndroidのサポートについても調査しています。
+
+Unreal EngineでのPythonの使用（最終的に）
+
+あなたの目的がエディタをスクリプト化することであるならば、あなたは直接にジャンプすることができます
+
+https://github.com/20tab/UnrealEnginePython/tree/master/docs
+
+と
+
+https://github.com/20tab/UnrealEnginePython/tree/master/examples
+
+最初のディレクトリには特定の分野の公式ドキュメントが含まれていますが、2番目のディレクトリにはプロジェクトの「魔法」を実行するpythonスクリプトのコレクションがあります。
+
+Pythonで管理される新しい青写真クラスの作成
+
+私たちはPython（C ++や青写真の代わりに）に基づいて新しいActorを作成します。
+
+これは「穏やかな」アプローチで、UE4のAPIと対話するための「プロキシ」のPythonクラスを使用しています。あなたがシステムに慣れたら、あなたはさらに行くと柄ネイティブサブクラスのAPIを作業を開始できます（https://github.com/20tab/UnrealEnginePython/blob/master/docs/Subclassing_API.md）
+
+コンテンツブラウザで「新規追加」をクリックし、「青写真クラス」を選択します。
+
+クラスメニューで「PyActor」を選択します：
+
+代替テキスト
+
+ここで新しいアセットが作成され、意味のある名前を付けてダブルクリックすると、青写真エディタでの設定が開始されます
+
+代替テキスト
+
+右側（[詳細]タブ）にはPythonのセクションがあります。
+
+今のところ「Python Module」と「Python Class」のみが意味を持ちます。
+
+プロジェクトのContentディレクトリに移動し、 'Scripts'という名前のディレクトリを作成します。ここにあなたのすべてのPythonモジュールが常駐します。好きなテキストエディタで、新しいpythonモジュール（funnygameclasses.pyなど）を作成し、そこに新しいクラスを定義します：
+
+輸入 unreal_engine として UE
+
+ue.log（'こんにちは私はPythonモジュールです」）
+
+クラス ヒーロー：
+
+    ＃これは、ゲーム開始時に呼び出される
+    デフ begin_play（自己）：
+        ue.log（'ヒーロークラスにプレイを開始」）
+
+    ＃これは、すべての「チック」で呼ばれている     
+    デフ ティック（自己、 DELTA_TIME）：
+        ＃は現在の位置の取得 
+        場所 =  自己 .uobject.get_actor_location（）
+        ＃の DELTA_TIME称える増加Z 
+        location.z + =  100  * DELTA_TIME
+        ＃設定し、新しい場所の
+        自己 .uobjectを.set_actor_location（location）
+今、ブループリントエディタに戻り、 'Pythonモジュール'フィールドに 'funnygameclasses'、 'Pythonクラス'フィールドに 'Hero'を設定します。
+
+あなたが見ることができるように、俳優は単にz軸上を移動するだけですが、シーンにフィードバックを付けるためには何らかの視覚的表現を与える必要があります。青写真エディタで「コンポーネントを追加」をクリックし、いくつかのシェイプ（球体、キューブなど）を追加します。青写真を保存してコンパイルします。
+
+今度は、コンテンツブラウザからシーンにbluprintをドラッグして、「再生」をクリックするだけです。
+
+あなたは、あなたの俳優が1メートル/秒の速度で 'z'軸に沿って動くのを見なければなりません
+
+デフォルトでは、 'begin_play'と 'tick'メソッドが必要です（見つかった場合、自動的に考慮されます）。それらに加えて、イベントを定義するための「自動」システムが利用可能である：
+
+デフ on_actor_begin_overlap（自己、私、other_actor）：
+     パス
+
+デフ on_actor_end_overlap（自己、私、other_actor）：
+     パス
+
+デフ on_actor_hit（自己、私、other_actor、normal_impulse、hit_result）：
+     パス
+
+...
+基本的に 'on_'で始まる各メソッドに対して、関連するデリゲート/イベントは自動的に設定されます（利用可能な場合）。
+
+代わりに手動でイベントを設定する方が好きなら、次の関数が公開されます：
+
+クラスの ボール：
+
+    デフ begin_play（自己）：
+         自己 .uobject.bind_event（' OnActorBeginOverlap 」、自己 .manage_overlap）
+         自己 .uobject.bind_action（'ジャンプ'。、UE IE_PRESSED、自己 .uobject.jump）
+         自己 .uobject.bind_key（' K '、 UE。IE_PRESSED、自己 .you_pressed_K）
+         自己 .uobject.bind_axis（' MoveForward 」、自己 .move_forward）
+
+    デフ manage_overlap（自己、私を、他）：
+        ue.print_string（「重複」  + other.get_name（））
+
+    デフ you_pressed_K（自己）：
+        （ue.log_warning 「あなたはKを押します」）
+
+     デフ move_forward（自己、量）：
+        ue.print_string（'軸値："  +  strの（量））
+
+「self.uobject」とは何ですか？
+
+シームレスなPythonの統合を可能にするために、エンジンの各UObjectは自動的に特別なPythonオブジェクト（ue_PyUObject）にマッピングされます。
+
+あなたがPythonからUObjectにアクセスしたいときはいつでも、ue_PyUObjectへの参照を取得して、そのメソッドを介してUObjectの機能（プロパティ、関数など）を公開します。
+
+この特殊なPythonオブジェクトはメモリ内のC ++マップにキャッシュされます。（キーはUObjectポインタ、値はue_PyUObjectポインタです）
+
+より明確にするために、次の呼び出しを行います。
+
+text_render_component = unreal_engine.find_class（' TextRenderComponent '）
+内部的に 'TextRenderComponent'クラスを（非現実的なC ++リフレクションによって）検索し、見つかった場合はキャッシュ内で使用可能かどうかをチェックします。そうでなければ、キャッシュに置かれる新しいue_PyUObjectオブジェクトを作成します。
+
+前の例から 'text_render_component'はUObjectへのマッピングを保持しています（この例ではUClassです）。
+
+注意：PyActor（またはPyPawn、PyCharacter、PyComponent）にマップするPythonクラスは、ue_PyUObjectではありません。これは、関連するue_PyUObjectマップされたオブジェクトへの参照（'uobject 'フィールド経由）を保持する古典的なpythonクラスです。これらのクラスを記述するための最善の技術用語は「プロキシ」です。
+
+これからの 'uobject'についての注意
+
+次の行では、 'uobject'への参照を見つけるたびに、それはue_PyUObjectオブジェクトとして意味されます。
+
+ActorにPythonコンポーネントを追加する
+
+これはPyActorクラスと同じように動作しますが、それはコンポーネントです。あなたはそれを（任意のアクタに「Python」コンポーネントを検索して）添付することができます。
+
+コンポーネントの場合、self.uobjectフィールドはアクタではなくコンポーネント自体を指していることに注意してください。
+
+アクターにアクセスするには、以下を使用します。
+
+俳優=  自己 .uobject.get_owner（）
+次の例では、3人目の公式の青写真を非イベントの方法でPythonコンポーネントとして実装しています（これは、非現実的なエンジンでは反パターンです、イベントベースのアプローチについては以下を参照してください）。
+
+輸入 unreal_engine として UE
+
+クラス プレーヤー：
+     デフ begin_play（自己）：
+        ＃はによりポーン（文字）への参照を取得
+        自己 .pawn =  自己）（.uobject.get_ownerを
+
+        ＃は、ポーンが軸が値受け取ることができます
+        自己 .pawn.bind_input_axis（ ' TurnRate '）
+        自己 .pawn.bind_input_axis（ ' LookUpRateを」）
+
+        ＃次の2つの値は、もともと青写真変数として実装されている
+        自己 .base_turn_rate =  45.0 
+        自己 .base_look_up_rate =  45.0
+
+         ＃結合する他の軸の
+        自己 .pawn.bind_input_axis（「電源を入れ'）
+        自己 .pawn.bind_input_axis（「ルックアップ」）
+
+        自己 .pawn.bind_input_axis（' MoveForward '）
+         自己 .pawn.bind_input_axis（「 MoveRight 」）
+
+    デフ ティック（自己、DELTA_TIME）：
+        ＃ zの回転 
+        turn_rate =  自己 .pawn.get_input_axis（' TurnRate '）*  自己 .base_turn_rate * DELTA_TIMEの
+         自己 .pawn.add_controller_yaw_input（turn_rate）
+
+        ＃の Y回転 
+        look_up_rate =  自己 .pawn.get_input_axis（ ' LookUpRate '） *  自己 .base_look_up_rate * DELTA_TIMEの
+        自己 .pawn.add_controller_pitch_input（look_up_rate）
+
+        ＃のマウス垂直
+        自己 .pawn.add_controller_yaw_input（自己 .pawn.get_input_axis（「電源を入れ'））
+
+        ＃のマウスの水平
+        自己 .pawn.add_controller_pitch_input（自己 .pawn.get_input_axis（「ルックアップ」））
+
+        ＃電流制御回転取得 
+        腐敗 =  自己）（.pawn.get_control_rotationを
+
+        ＃は、キャラクタ移動 
+        FWD =（ue.get_forward_vectorを 0、 0、腐敗[ 2 ]）
+        右= ue.get_right_vector（0、0、rot.yaw）
+
+        自己 .pawn.add_movement_input（FWD、自己 .pawn.get_input_axis（' MoveForward '））
+         自己 .pawn.add_movement_input（右、自己 .pawn.get_input_axis（「 MoveRight 」））
+
+        ＃は、ジャンプを管理する
+        場合は 自己 .pawn.is_action_pressed（ 'ジャンプ'）：
+            自己 .pawn.jump（）
+        の場合 、自己 .pawn.is_action_released（ 'ジャンプ'）：
+            自己 .pawn.stop_jumping（）
+そして、「祝福された」出来事の約束通り、
+
+クラス PlayerEvented：
+
+    デフ begin_play（自己）：
+        ＃はによりポーン（文字）への参照を取得
+        自己 .pawn =  自己 .uobject.get_ownerを（）
+
+        ＃次の2つの値は、もともと青写真変数として実装された
+        自己 .base_turn_rate =  45.0 
+        自己 .base_look_up_rate =  45.0
+
+        ＃のバインド軸イベントは、
+        自己（.pawn.bind_axis ' TurnRate 」、自己 .turn）
+        自己 .pawn.bind_axis（ ' LookUpRate 」、自己 .look_up）
+        自己 .pawn.bind_axis（「電源を入れて」、自己 .pawn.add_controller_yaw_input）
+        自己を。 pawn.bind_axis（「ルックアップ」、自己 .pawn.add_controller_pitch_input）
+
+        自己 .pawn.bind_axis（' MoveForward 」、自己 .move_forward）
+         自己 .pawn.bind_axis（「 MoveRight 」、自己 .move_right）
+
+        ＃のバインドアクション
+        自己 .pawn.bind_action（「ジャンプ」、UE。 IE_PRESSED、自己 .pawn.jump）
+        自己 .pawn.bind_action（「ジャンプ」、UE。 IE_RELEASED、自己 .pawn.stop_jumping）
+
+    デフ ターン（自己、axis_value）：
+        turn_rate = axis_value *  自己 .base_turn_rate *  自己 .uobject.get_world_delta_seconds（）
+         自己 .pawn.add_controller_yaw_input（turn_rate）
+
+    デフ look_up（自己、axis_value）：
+        look_up_rate = axis_value *  自己 .base_look_up_rate *  自己 .uobject.get_world_delta_seconds（）
+         自己 .pawn.add_controller_pitch_input（look_up_rate）
+
+    デフ move_forward（自己、axis_value）：
+        腐敗=  自己 .pawn.get_control_rotation（）
+        FWD = ue.get_forward_vector（0、0、腐敗[ 2 ]）
+         自己 .pawn.add_movement_input（FWD、axis_value）
+
+    デフ move_right（自己、axis_value）：
+        腐敗=  自己 .pawn.get_control_rotation（）
+        右= ue.get_right_vector（0、0、腐敗[ 2 ]）
+         自己 .pawn.add_movement_input（右、axis_value）
+ネイティブメソッドVS反射
+
+デフォルトではUObjectクラスが定義GETATTRとSETATTRを非現実的なプロパティと関数のラッパーとして。
+
+つまり、次の呼び出しを行います。
+
+自己 .uobject.bCanBeDamaged =  真
+それは
+
+自己 .uobject.set_property（' bCanBeDamaged '、真）
+関数呼び出しだけでなく、
+
+VEC =  自己 .uobject.GetActorRightForward（）
+手段
+
+VEC =  自己 .uobject.call_function（' GetActorRightForward '）
+さらに重要な（そして便利な）K2_関数も自動的に公開されます：
+
+VEC =  自己 .uobject.GetActorLocation（）
+次のようになります。
+
+VEC =  自己 .uobject.call_function（' K2_GetActorLocation '）
+明らかにメソッド/プロパティを組み合わせることができます：
+
+自己 .uobject.CharacterMovement.MaxWalkSpeed =  600.0
+システムが完全な非現実的なAPIの使用を許可しても、リフレクションはネイティブメソッドより遅くなります。
+
+可能であればネイティブメソッドを使用し、ネイティブメソッドとして関数を公開する必要があると思うときはいつでもプルリクエストをオープンしてください。
+
+そう
+
+VEC =  自己 .uobject.get_actor_location（）
+方法よりも速いです
+
+VEC =  自己 .uobject.GetActorLocation（）
+反射ベースの関数は、キャメルケース（または最初の大文字）の関数です。代わりに、ネイティブ関数は小文字のアンダースコアと区切りの関数名を持つPythonスタイルに従います。
+
+automagic UClassとUEnumsのマッパー
+
+unreal_engine.find_class（name）呼び出しのgazilionを実行する代わりに、プラグインはunreal_engine.classesという 'magic'モジュールを追加します。Pythonクラスのような非現実的なクラスをインポートすることができます：
+
+unreal_engine.classes インポート ActorComponent、ForceFeedbackEffect、KismetSystemLibrary
+
+... 
+コンポーネント=  自己 .uobject.get_owner（）。GetComponentsByClass（ActorComponent）
+
+... 
+自己 .force_feedback = ue.load_object（ForceFeedbackEffect、' /ゲーム/バイブ」）
+ 自己 .uobject.get_player_controller（）。ClientPlayForceFeedback（自己 .force_feedback）
+
+... 
+名前= KismetSystemLibrary.GetObjectName（自己 .actor）
+最後の例は、静的なクラスの関数呼び出しという別の魔法の機能を示しています。明らかに、この特定のケースでは、self.actor.get_name（）を使用するのが最良のアプローチでしたが、この機能により、青写真関数ライブラリにもアクセスできます。
+
+ウィジェットを追加する別の例：
+
+unreal_engine.classes インポート WidgetBlueprintLibraryを
+
+クラス PythonFunnyActor：
+     デフ begin_play（自己）：
+        WidgetBlueprintLibrary.Create（自己 .uobject、ue.find_class（' velocity_C '））
+列挙型、キーワード引数、および出力値を使用するもう1つの複雑な例（出力値は戻り値の後に追加されます）：
+
+輸入 unreal_engine として UE
+ から unreal_engine 輸入 FVector、FRotator、FTransform、FHitResult
+ から unreal_engine.classesはインポート ActorComponent、ForceFeedbackEffect、KismetSystemLibrary、WidgetBlueprintLibraryを
+ から unreal_engine.enums インポート EInputEvent、ETraceTypeQuery、EDrawDebugTraceを
+
+...
+
+is_hitting_something、hit_result = KismetSystemLibrary.LineTraceSingle_NEW（自己 .actor、自己 .actor.get_actor_location（）、FVector（300、300、300）、ETraceTypeQuery.TraceTypeQuery1、DrawDebugType = EDrawDebugTrace.ForOneFrame）
+ 場合 is_hitting_something：
+    ue.log（hit_result）
+ue_site.pyファイル
+
+エディタ/エンジンの起動時に、ue_siteモジュールのインポートが試行されます。そこに初期化コードを配置する必要があります。モジュールをインポートできない場合は、ログに（有害な）メッセージが表示されます。
+
+PyPawn
+
+これはPyActorのように機能しますが、今回は新しいPawnクラスを生成します（これはコントローラで可能です）
+
+「世界」コンセプト
+
+すべてのオブジェクトはワールド（UWorld in C ++）にマップされます。一般に、レベルで演奏すると、オブジェクトはすべて同じ世界に住んでいますが、同時に複数の世界が存在する可能性があります（たとえば、エディタでテストするときにエディタの世界とシミュレーションの世界があります）
+
+他の世界を参照することは非常にまれですが、2つのオブジェクトの世界を比較する必要があるかもしれません（例えば、Pythonモジュール内の参照を隠れた世界のオブジェクトに持っていて、 ）。
+
+uobject.get_world（）関数は、ワールドを表すオブジェクト（C ++ UWorldクラス）を返します。
+
+オブジェクトのAPI
+
+各オブジェクトは、エンジンのUObjectクラスを表します。このC ++クラスは、基本的に他のすべてのクラス（アクター、Pawn、コンポーネント、プロパティ...）のルートです。Unreal Engineリフレクションシステムのおかげで、各非現実のエンジンクラスに対してPythonクラスを実装する必要はありませんが、パフォーマンス上の理由から、最も一般的なメソッドが公開されています。uobjectシステムは、マップされたC ++ UObjectの型をチェックし、呼び出すことが安全である場合にのみメソッドを呼び出します。
+
+時には、適切なオブジェクトを自動的に取得するためのメソッドが実装されています。例として、get_actor_location（）はコンポーネント上で呼び出されると自動的に関連するアクターを取得し、C ++のAActor :: GetActorLocation（）メソッドを呼び出します。
+
+このオートマティックアプローチが危険すぎる場合、メソッドはオブジェクトタイプをチェックし、矛盾が発生した場合に例外を発生させます。
+
+リフレクションシステムは、すべての単一エンジンクラスメソッドを実装する必要はないことを覚えておいてください。リフレクションシステムは、プロパティと関数呼び出しによってのみ制御されるほど強力です（uobject call（）メソッドをチェックしてください）
+
+最もよく使用されるメソッドは、パフォーマンス上の理由から、直接、オブジェクトメソッドとして実装されます。
+
+あなたがここにuobject APIメソッドのリストを取得することができますhttps://github.com/20tab/UnrealEnginePython/blob/master/docs/uobject_API.md
+
+自動モジュールリロード（エディターのみ）
+
+エディタでは、プロジェクトを再起動することなく、プロキシにマップされたモジュールのコードを変更できます。PyActor、PyPawn、またはPythonComponentがインスタンス化されるたびに、エディタはモジュールをリロードします。これは明らかに最良の方法ではありません。将来、必要に応じてリロードするために、ファイルにタイムスタンプ監視を実装したいと考えています。
+
+プリミティブと数学関数
+
+プラグインは、FVector、FRotator、FQuat、FColor、FHitResult、および内部ハンドルの束を公開します。
+
+意味のある数学演算が公開されている場所：
+
+輸入 unreal_engine
+
+クラス ActorGoingUp：
+     デフ begin_play（自己）：
+        ＃秒ずつ1メートル
+        自己 .speed =  100
+
+    デフ ティック（自己、DELTA_TIME）：
+        ＃がアップベクトル取得 
+        アップ=  自己 .uobject.get_up_vector（）
+        ＃は、現在位置の取得 
+        位置を=  自己 .uobject.get_actor_location（）
+        ＃は、速度に基づいて方向ベクトルを構築 
+        up_amount =アップ*  自己 .speed * DELTA_TIME）
+        ＃の位置に和方向 
+        位置+ = up_amount
+         ＃は新しい位置の設定
+        、自己 .uobject.set_actor_locationを（new_position）
+オブジェクトの参照
+
+find_class（）、find_struct（）およびfind_object（）関数を使用して、すでにロードされているクラス/オブジェクトを参照することができます。
+
+エンジンにロードされていないアセット（まだ）を参照する必要がある場合は、load_struct（）、load_class（）またはload_object（）を使用できます。
+
+a_struct_data = ue.load_struct（' /ゲーム/データ」）
+ue.log（a_struct_data.as_dict（））
+特定の資産を見つけることができます：
+
+texture_class = ue.find_class（'にTexture2D '）
+a_specific_texture = ue.load_object（texture_class、' /ゲーム/テクスチャ/ロゴ2 」）
+as_dict（）メソッド
+
+この特別なメソッドは任意のuobjectで呼び出すことができます：それはPython辞書にそれをシリアル化しようとします
+
+ナビゲーション
+
+唯一公開されているナビゲーション関連のメソッドは 'simple_move_to_location'です。それは、（キャラクターのような）動き成分を持つPawnを期待しています。
+
+クラス MoveToTargetComponent：
+
+    デフ begin_play（自己）：
+        ＃ポーンパブリックプロパティから「目標点」参照を取得し 
+        、ターゲット=  自己。）（.uobject.get_ownerをGET_PROPERTY（'ターゲット'）
+         自己。）.uobject.get_ownerを（simple_move_to_location（target.get_actor_location（） ）
+
+    デフ ティック（自己、DELTA_TIME）：
+         パスを
+ディアブロのような動きの別の例（クリックして移動する、このコンポーネントを文字に追加する）
+
+クラス ウォーカー：
+     デフ begin_play（自己）：
+         自己 .uobject.show_mouse_cursor（）
+     デフ ティック（自己、DELTA_TIME）：
+         場合 ない 自己 .uobject.is_input_key_down（' LeftMouseButton '）：
+             リターン 
+        ヒット=  自己 .uobject.get_hit_result_under_cursor（UE。COLLISION_CHANNEL_VISIBILITY）
+         場合 ではないヒット：
+             リターン
+        ＃のヒットがunreal_engine.FHitResultオブジェクトである
+        自己 .uobject.simple_move_to_location（hit.impact_point）
+物理
+
+'set_simulate_physics'メソッドは、PrimitiveComponentの物理を有効にするために公開されています。
+
+衝突のプリセットを適切に設定しなくても、物理学を有効にすることはできません。
+
+＃の staticmeshcomponent（球）とPyActor 
+＃それは下剤のオブジェクトになっ重なっ
+クラスの ボール：
+
+    デフ begin_play（自己）：
+         自己 .sphere =  自己 .uobject.get_actor_component_by_type（ue.find_class（' StaticMeshComponent '））
+
+    デフ ティック（自己、DELTA_TIME）：
+         パスを
+
+    デフ on_actor_begin_overlap（自己、私は、other_actor）：
+        ＃の変更衝突プロファイル
+        自己 .sphere.call（' SetCollisionProfileName BlockAll '）
+         ＃は、物理学の有効
+        自己）（.sphere.set_simulate_physicsを
+
+    ＃オブジェクトがイベントをヒット、物理一つとなった後には到着し始めます
+    デフ on_actor_hitを（自己、私、他の、 * 引数）：
+        （ue.print_string 'でHIT 」  + other.get_name（））
+TODO：より多くの物理機能を公開します。特に、力を加えるためのものです。
+
+タイマー
+
+カスタムPythonクラスが公開され（unreal_engine.ftimerHandler）、UE4タイマーをサポートします：
+
+＃タイマーの作成 
+タイマー =  自己 .uobject.set_timer（周波数を、呼び出し可能な [、ループは、初期]）
+＃は、タイマをクリア
+timer.clear（）
+＃タイマーを一時停止
+timer.pause（）
+＃タイマーの一時停止を解除 
+）（timer.unpauseを
+骨折
+
+フラクチャリングは、あなたが非現実のエンジンで無料で入手できる最高の機能の1つです。
+
+あなたはPythonから直接破壊可能なオブジェクトにダメージを与えることができます（もっと多くの種類のダメージがすぐに追加されます）
+
+クラス DestroyMeComponent：
+
+    デフ begin_play（自己）：
+        ＃は俳優の中で破壊コンポーネントへの参照を取得
+        自己 .destructible =  自己 .uobject.get_actor_component_by_type（ue.find_classを（' DestructibleComponent '））
+
+    デフ ティック（自己、DELTA_TIME）：
+         パスを
+
+    デフ 爆発（自己）：
+        ＃のダメージ量の 
+        量=  1000年 
+        強度=  20000 
+        位置=  自己 .uobject.get_ownerを（）get_actor_locationを（）。
+        アップ=  自己 .uobject.get_owner（）。get_actor_up（）
+         自己（最大量、強度、位置、）.destructible.destructible_apply_damage
+'Call Python Component Method'ノードを使用して青写真を介して 'explode'メソッドを呼び出すことができます
+
+別のアプローチ（より簡単な方法）では、RadialForceComponentを追加して、何かを破壊したいときに起動します：
+
+＃ RadialForceComponentのへの参照を取得
+自己 .radial_forceを =  自己 .uobject.get_owner（）。get_actor_component_by_type（ue.find_class（ ' RadialForceComponent '））
+
+＃それを発射！
+自己 .radial_force.call（ ' FireImpulse '）
+スプライン
+
+スプラインはUE4の素晴らしい機能です。
+
+次のコンポーネントは、スプラインパスを介して別のアクタを移動する方法を示しています。
+
+クラス スプライン：
+     デフ begin_play（自己）：
+        ＃は、スプラインコンポーネントへの参照を取得
+        自己 .spline =  自己）（.uobject.get_ownerをget_actor_component_by_type（ue.find_class（。' SplineComponent '））
+        ＃は、スプラインの長さを見つける
+        自己 .max_distanceを=  自己 .spline.get_spline_length（）
+         自己 .distanceは=  0.0 
+        ＃は（青写真プロパティとして）移動するアクターへの参照を取得し
+        、自己 .actor_to_move =  自己 .uobject.get_ownerを（）。GET_PROPERTY（' ObjectToMove '）
+
+    デフ ティック（自己、DELTA_TIME）：
+         場合は 自己 .distance > =  自己 .max_distance：
+             リターン
+        ＃はスプライン上の次のポイントを見つける 
+        next_point =  自己 .spline.get_world_location_at_distance_along_spline（自己 .distance）
+         自己 .actor_to_move.set_actor_location（next_point）
+         自己 .distanceを+ =  100  * DELTA_TIME
+Blueprintsの統合
+
+.call（）および.call_function（）メソッドを使用して、青写真関数（またはカスタムイベント）を呼び出すことができます。
+
+your_funny_blueprint_object.call（' AFunctionOrACustomEvent with_a_arg 」）
+外部オブジェクトを参照する必要があるときはいつでも、find_object（）などを使用しないでください。代わりに、特定のオブジェクトを指しているパブリック変数を青写真に追加します。次に、このオブジェクトを簡単に参照してプロパティ値を取得することができます。
+
+the_other_object =  自己 .uobject.get_property（「ターゲット」）
+the_other_object.set_actor_location（0、0、0）
+.call_function（）はより高度です。戻り値とPythonの引数を考慮しています：
+
+＃曲線を持つオブジェクトzを移動する例：
+クラス Curver：
+    デフ begin_play（自己）：
+        自己 .curve =  自己。.uobject.get_owner（）GET_PROPERTY（ '曲線'）
+        自己 .accumulator =  0.0 
+    デフ ティック（自己、 DELTA_TIMEを） ：
+        場所=  自己 .uobject.get_actor_location（）
+        Z =  自己 .curve.call_function（' GetFloatValue 」、自己 .accumulator）*  100 
+        自己 .uobject.set_actor_location（location.x、location.y、z）の
+         自己 .accumulator + = DELTA_TIME
+イベント
+
+イベント（以前のように）をbind_event関数で簡単にバインドすることができます
+
+自己 .uobject.bind_event（' OnActorBeginOverlap 」、a_funny_callback）
+Pythonから直接カスタムイベントをマッピングするためのサポートが現在行われています。
+
+青写真からPython関数にイベントをマップする場合は、さまざまなプラグインクラスによって公開されている「python call」青写真関数を使用するのが最も良い方法です。
+
+代替テキスト
+
+オーディオ
+
+uobject.play_sound_at_location（sound、position [、volume_multiplier、pitch_multiplier、start_time]）apiメソッドが公開されています：
+
+＃ asoundへの参照を取得する 
+音 = ue.find_object（ ' my_soundを'）
+＃は、位置で0,0,0サウンドを再生
+自己 .uobject.play_sound_at_location（音、FVector（ 0、 0、 0））
+AudioComponentを使いたい場合：
+
+クラス サウンダ：
+     デフ begin_play（自己）：
+        ＃は、この俳優のAudioComponent見つける
+        自己 .AUDIO =  自己 .uobject.get_component_by_type（' AudioComponent '）
+         自己 .audio.call（「ストップ」）
+     デフ ティック（自己、DELTA_TIMEを）：
+        ＃の開始押す音'' 
+        の場合 、自己 .uobject.is_input_key_down（' A '）：
+             自己 .audio.call（'プレイ'）
+アニメーション
+
+アニメーションの青写真の変数やイベントを簡単に制御できます：
+
+＃骨格メッシュへの参照を取得 
+骨格 =  自己 .uobject.get_component_by_type（ ' SkeletalMeshComponent '）
+＃をアニメーションクラスへの参照を取得 
+アニメーション =）（skeletal.get_anim_instanceを
+
+＃は変数設定 
+animation.set_property（「スピード」、 17.0）
+
+＃カスタムイベントトリガー 
+animation.call（ ' AttackWithSwordを」）
+パッケージング
+
+プロジェクトをパッケージ化するときは、バイナリフォルダとScriptsディレクトリにlibpython（dllまたはdylib）を含めてください。
+
+あなたがPythonのソースを配布したくない場合は、あなただけ含めることができます__pycache__バイトコードでディレクトリを。
+
+Pythonのサードパーティ製モジュールを含めることを忘れないでください（あなたのプロジェクトでそれらのモジュールを使用している場合）
+
+例
+
+これは、別のアクターが重複しているときには、それ自体を破壊するPyActorです。メッシュコンポーネントを（球のように）追加し、その衝突動作を 'OverlapAll'として設定することを忘れないでください。これは、第三者の公式テンプレートでテストすることができます。
+
+クラスの ボール：
+     デフ begin_play（自己）：
+        （ue.print_string 'こんにちは'）
+     デフ ティック（自己、DELTA_TIME）：
+         渡す
+    デフ on_actor_begin_overlap（自己を、other_actor）：
+        ue.print_string（'と衝突」  + other_actor.get_name（））
+         自己 .uobject.actor_destroy（）
+今度はPyActorを完全に（実行時に!!!）作成します：
+
+クラスの スーパーヒーロー：
+     デフ begin_play（自己）：
+         ＃1スポーン新しいPyActor 
+        new_actor =  自己 .uobject.actor_spawn（ue.find_class（' PyActor '）、Fvector（0、0、0）、FRotator（0、0、90））
+        ＃をルート1のように球のコンポーネントを追加 
+        static_mesh =（ue.find_class（new_actor.add_actor_root_component ' StaticMeshComponent '、）' SphereMesh '）
+         ＃は、球の資産としてメッシュを設定 
+        static_mesh.call（' SetStaticMesh /Engine/EngineMeshes/Sphere.Sphere 」）
+         ＃は、 Pythonのモジュール設定 
+        new_actor.set_property（' PythonModule '、' gameclasses '）
+         ＃は、 Pythonのクラス設定 
+        new_actor.set_property（' PythonClass 」、「垂直に」）
+
+    デフ ティック（自己、DELTA_TIME）：
+         パスを
+PyQTとの統合
+
+PyQTをUnrealEngineと正しく統合するには、pythonプラグインが正しくGILをセットアップしなければならない（これが行われます）例外はアドホックで管理する必要があります（qtシグナルハンドラが例外を発生させるとデッドロックが発生します）
+
+これは、エディタに沿ってアセットの再インポートを開始するQTウィンドウを持つ例です（sys.excepthookの使用に注意してください）。
+
+PyQt5.QtWidgets インポートはQApplication、QWidgetの、QListWidgetの
+ 輸入 unreal_engineをとして UE
+ 輸入のsys
+ 輸入トレースバック
+
+デフ ue_exception（_type、値、バック）：
+    ue.log_error（値）
+    tb_lines = traceback.format_exception（_type、値、バック）
+     のためのラインで tb_lines：
+        ue.log_error（行）
+
+sys.excepthook = ue_exception
+
+skeletal_mappings = {}
+
+デフ selected_skeletal_mesh（アイテム）：
+    uobject = skeletal_mappings [item.data（）]
+    ue.log（「再インポートする準備ができました：'  + uobject.get_name（））
+    uobject.asset_reimport（）
+
+アプリ=はQApplication（[]）
+
+勝利=はQWidget（）
+win.setWindowTitle（「アンリアル・エンジン4骨格メッシュのreimporter '）
+
+wlist = QListWidget（勝利）
+ のための資産で ue.get_assets_by_class（「骨格メッシュ'）：
+    wlist.addItem（asset.get_name（））
+    skeletal_mappings [asset.get_name（）] =資産
+
+wlist.clicked.connect（selected_skeletal_mesh）
+wlist.show（）
+
+win.show（）
+メモリ管理
+
+2種類のGCを扱うのは本当に難しい作業です。
+
+PyActor、PyPawn、およびPythonComponentは、自動的にDECREFにマップされたクラスです。これは、あなたがPythonモジュール自体で参照を保持しない限り、十分であるはずです。これはプログラミングの習慣が悪いので、現在のアプローチは十分安全でなければなりません。
+
+これに加えて、uObjectはUObjectマッピングを返さなければならないたびに、その妥当性と安全性をチェックします。
+
+＃が定義 ue_py_check（py_u）の場合（！py_u-> ue_object ||！py_u-> ue_object-> IsValidLowLevel（）|| py_u-> ue_object-> IsPendingKillOrUnreachable（））\
+                            （、PyExc_Exception PyErr_Formatを返す」 PyUObjectが無効な状態にあります」）
+ユニットテスト
+
+リポジトリには、TestingActorアセットとtests.pyスクリプトが含まれています。アセットとスクリプトをプロジェクトに追加するだけで、テストスイートが実行されます。テストスイートはまだまだ改善される試作品です。
+
+スレッディング（実験的）
+
+デフォルトでは、プラグインは効果的なPythonスレッドのサポートなしでコンパイルされます。これは主に2つの理由によるものです。
+
+GILを常に取得してリリースすることによるパフォーマンスの影響については、まだ数字がありません
+私たちはより良いテストスイートが必要です
+ちなみに、実験的なスレッドのサポートをしたい場合は、コメントを外してください
+
+//の#define UEPY_THREADING 1
+UnrealEnginePythonPrivatePCH.hの上に配置し、プラグインを再構築します。
+
+ネイティブスレッドと同様に、非メインスレッドからのUObjectを変更（インクルードされた削除）しないでください。
+
+UObjectからのPythonプロキシへのアクセス
+
+ときには、UObjectを持っていて、それがPythonオブジェクトに裏打ちされていることを知っていることがあります。UObjectからPythonオブジェクトを取得するには、使用get_py_proxy方法を。たとえば、次のような状況があるとします。
+
+あるPyActorというサブクラスPyExplosiveActorがありExplosive、そのPythonのクラスとしては。
+Explosive持っているgo_boomのpython方法を。
+あるPyActorというサブクラスPyBadGuyActorと呼ばれる青写真プロパティがありMyBombと呼ばれるPythonのクラスがBadGuy。
+BadGuypythonでのインスタンスは、そのUObjectはそのを持っていることを知っているMyBombのインスタンスとしてPyExplosiveActorとコールしたいgo_boomのpython方法を。
+これは以下のように解決されます。
+
+import unreal_engine as ue
+
+class Explosive:
+    'Python representation for PyExplosiveActor in UE4'
+
+    def go_boom(self):
+        # do python stuff to explode
+        ...
+        self.uobject.destory()
+
+class BadGuy:
+    'Python reprsentation for PyBadGuyActor in UE4'
+
+    def ignite_bomb(self, delay):
+        bomb = self.uobject.MyBomb
+        py_bomb = bomb.get_py_proxy()
+        py_bomb.go_boom()
+
+何でここで起こっていることBadGuyself.uobjectがPyActor UObjectへの参照であるとということですself.uobject.MyBombへの参照ですPyExplosiveuobject。しかし、その代わりに、あなたは（そのプロキシクラスにアクセスしたいですExplosive）。get_py_proxy()この方法は、Pythonのカスタムクラスを返すExplosiveことをPyExplosiveActor、オブジェクトがマップされています。
+
+ステータスと既知の問題
+
+プロジェクトはベータ状態であると考えることができます。
+
+完全なue4 apiを公開することは膨大な量の作業であり、あなたの特定のニーズに応じて自由にリクエストを行うことができます。
+
+.pyファイルはエディタで認識されません。これは間もなく修正されるはずです
+
+まだプラグインアイコンはありません。
+
+ビルドシステムはそれほど堅牢ではありません。たぶんPythonの静的ライブラリをプラグインDLLにリンクする方が良い方法かもしれません。
+
+連絡先と商用サポート
+
+私たちに連絡（ヘルプ、サポート、スポンサーシップ）したい場合は、20tab.comの情報にメールをドロップするか、Twitterで@unbitに従ってください
+
+UnrealEngineとUnrealEnginePythonの商用サポートを提供し、さらに20tab.comの情報にメールを送ってより多くの情報を入手します
+
+
+
+
+
+
+
+
+-------------------------------------Eng---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
 # UnrealEnginePython
 Embed Python in Unreal Engine 4
 
